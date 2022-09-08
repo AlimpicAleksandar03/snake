@@ -1,6 +1,6 @@
 let snake_speed = 1
 let lastRenderTime = 0
-let snakeSpeed = 3
+let snakeSpeed = 5
 let snakeBody = [{ x: 10, y: 0 }]
 let size = 10
 let gameBoard = document.getElementById('gameCanvas')
@@ -16,17 +16,21 @@ let around = [
   { x: -10, y: 0 }, //left
 ]
 
-ctx.fillRect(0, 0, gameCanvas.clientWidth, gameCanvas.clientHeight)
-
+console.log(gameCanvas.clientWidth, gameCanvas.clientHeight)
+function clearScreen() {
+  ctx.fillStyle = 'black'
+  ctx.fillRect(0, 0, gameCanvas.clientWidth, gameCanvas.clientHeight)
+}
 function runGame(currentTime) {
   window.requestAnimationFrame(runGame)
   let secondsAfterRender = (currentTime - lastRenderTime) / 1000
   if (secondsAfterRender < 1 / snakeSpeed) return
   lastRenderTime = currentTime
+  clearScreen()
   updateSnake(snakeBody)
   drawSnake(snakeBody)
+  drawFood(food)
 }
-drawFood(food)
 
 window.requestAnimationFrame(runGame)
 
@@ -37,17 +41,29 @@ function drawSnake(snakeBody) {
   })
 }
 function drawFood(food) {
+  console.log(food.x, food.y)
   ctx.fillStyle = 'red'
   ctx.fillRect(food.x, food.y, size, size)
 }
+
 function updateSnake(snakeBody) {
   snakeBody.forEach((point, i) => {
-    let prevX = point.x
-    let prevY = point.y
-    point.x = point.x + getInputDirection().x
-    point.y = point.y + getInputDirection().y
-    ctx.fillStyle = 'black'
-    ctx.fillRect(prevX, prevY, size, size)
+    let pointToFollow = snakeBody[i + 1]
+    if (!pointToFollow) {
+      if (isEqualPos(point, food)) {
+        snakeBody.unshift({
+          x: point.x + previousDirection.x,
+          y: point.y + previousDirection.y,
+        })
+        food.x = getRandomCoordinate().x
+        food.y = getRandomCoordinate().y
+      }
+      point.x = point.x + getInputDirection().x
+      point.y = point.y + getInputDirection().y
+    } else {
+      point.x = pointToFollow.x
+      point.y = pointToFollow.y
+    }
   })
 }
 
@@ -80,4 +96,21 @@ window.addEventListener('keydown', (e) => {
 function getInputDirection() {
   previousDirection = currentDirection
   return currentDirection
+}
+
+function isEqualPos(pos1, pos2) {
+  return pos1.x === pos2.x && pos1.y === pos2.y
+}
+
+function getRandomCoordinate() {
+  let coordinates = []
+  let start = 10
+  for (let i = 1; i <= 38; i++) {
+    coordinates.push(start)
+    start += 10
+  }
+  return {
+    x: coordinates[Math.floor(Math.random() * coordinates.length)],
+    y: coordinates[Math.floor(Math.random() * coordinates.length)],
+  }
 }
