@@ -7,16 +7,21 @@
     <title>Document</title>
   </head>
   <body>
-      <canvas id="gameCanvas" width="400" height="400"><canvas>
+    <style>
+      #gameCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      p {
+        position: absolute;
+        top: 10px;
+        left: 400px;
+      }
+    </style>
+    <p id="score"></p>
 
-      <style>
-        #gameCanvas {
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
-      </style>
-      <script src="./main.js">
-      </script>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script src="./main.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 let snake_speed = 1
 let lastRenderTime = 0
-let snakeSpeed = 5
+let snakeSpeed = 15
 let snakeBody = [{ x: 10, y: 0 }]
 let size = 10
 let gameBoard = document.getElementById('gameCanvas')
@@ -15,8 +15,11 @@ let around = [
   { x: 10, y: 0 }, //right
   { x: -10, y: 0 }, //left
 ]
-
-console.log(gameCanvas.clientWidth, gameCanvas.clientHeight)
+let score = 1
+function displayScore() {
+  const para = document.getElementById('score')
+  para.innerText = `Score: ${snakeBody.length}`
+}
 function clearScreen() {
   ctx.fillStyle = 'black'
   ctx.fillRect(0, 0, gameCanvas.clientWidth, gameCanvas.clientHeight)
@@ -30,13 +33,14 @@ function runGame(currentTime) {
   updateSnake(snakeBody)
   drawSnake(snakeBody)
   drawFood(food)
+  displayScore()
 }
 
 window.requestAnimationFrame(runGame)
 
 function drawSnake(snakeBody) {
   snakeBody.forEach(({ x, y }) => {
-    ctx.fillStyle = 'blue'
+    ctx.fillStyle = 'green'
     ctx.fillRect(x, y, size, size)
   })
 }
@@ -50,16 +54,34 @@ function updateSnake(snakeBody) {
   snakeBody.forEach((point, i) => {
     let pointToFollow = snakeBody[i + 1]
     if (!pointToFollow) {
-      if (isEqualPos(point, food)) {
-        snakeBody.unshift({
-          x: point.x + previousDirection.x,
-          y: point.y + previousDirection.y,
-        })
-        food.x = getRandomCoordinate().x
-        food.y = getRandomCoordinate().y
+      let snakeHead = snakeBody[i]
+      // then it is a snake head
+      // need to check if head pos is equal to food pos
+      // need to check if head pos is equal to canvas boundaries
+      // check if head pos is equal to pos of some snakeBody point
+      if (
+        snakeHead.x + getInputDirection().x === -10 ||
+        snakeHead.y + getInputDirection().y === -10 ||
+        snakeHead.x + getInputDirection().x === 410 ||
+        snakeHead.y + getInputDirection().y === 410
+      ) {
+        gameOver()
       }
-      point.x = point.x + getInputDirection().x
-      point.y = point.y + getInputDirection().y
+      if (
+        snakeBody.filter((p) => {
+          return (
+            p.x === snakeHead.x + getInputDirection().x &&
+            p.y === snakeHead.y + getInputDirection().y
+          )
+        }).length
+      ) {
+        gameOver()
+      }
+      if (isEqualPos(point, food)) {
+        addTail(point)
+        randomizeFood(food)
+      }
+      moveSnakeHead(point)
     } else {
       point.x = pointToFollow.x
       point.y = pointToFollow.y
@@ -113,4 +135,24 @@ function getRandomCoordinate() {
     x: coordinates[Math.floor(Math.random() * coordinates.length)],
     y: coordinates[Math.floor(Math.random() * coordinates.length)],
   }
+}
+function randomizeFood(food) {
+  food.x = getRandomCoordinate().x
+  food.y = getRandomCoordinate().y
+}
+
+function addTail(point) {
+  snakeBody.unshift({
+    x: point.x + previousDirection.x,
+    y: point.y + previousDirection.y,
+  })
+}
+
+function moveSnakeHead(snakeHead) {
+  snakeHead.x += getInputDirection().x
+  snakeHead.y += getInputDirection().y
+}
+function gameOver() {
+  alert('game over')
+  location.reload()
 }
